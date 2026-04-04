@@ -209,9 +209,9 @@ export default function CustomerDashboard() {
                    </div>
                 </div>
 
-                <button className="w-full mt-4 rounded-2xl bg-surface-elevated border border-white/5 py-4 text-sm font-bold text-white hover:bg-white/5 transition-colors">
-                   Edit Profile Settings
-                </button>
+                <Link href="/profile" className="block w-full mt-4 rounded-2xl bg-surface-elevated border border-white/5 py-4 text-center text-sm font-bold text-white hover:bg-white/5 transition-all">
+                   Manage Profile Account
+                </Link>
              </div>
           </div>
 

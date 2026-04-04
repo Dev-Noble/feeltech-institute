@@ -191,6 +191,45 @@ const Header: React.FC = () => {
                     </Link>
                   </motion.div>
                 ))}
+
+                {user && (
+                  <div className="mt-4 space-y-2 border-t border-white/5 pt-4">
+                    <p className="px-4 text-xs font-bold uppercase tracking-widest text-text-muted mb-2">My Account</p>
+                    <Link
+                      href="/profile"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 rounded-2xl px-4 py-3 text-lg font-semibold text-text-secondary transition-all hover:bg-surface hover:text-primary"
+                    >
+                      <User size={20} /> My Profile
+                    </Link>
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 rounded-2xl px-4 py-3 text-lg font-semibold text-text-secondary transition-all hover:bg-surface hover:text-primary"
+                    >
+                      <LayoutDashboard size={20} /> My Dashboard
+                    </Link>
+                    
+                    {isAdmin && (
+                      <Link
+                        href="/admin/dashboard"
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-3 rounded-2xl px-4 py-3 text-lg font-semibold text-destructive transition-all hover:bg-destructive/10"
+                      >
+                        <ShieldCheck size={20} /> Admin Panel
+                      </Link>
+                    )}
+                    {isVendor && (
+                      <Link
+                        href="/vendor/dashboard"
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-3 rounded-2xl px-4 py-3 text-lg font-semibold text-primary transition-all hover:bg-primary/10"
+                      >
+                        <LayoutDashboard size={20} /> Vendor Dashboard
+                      </Link>
+                    )}
+                  </div>
+                )}
               </nav>
 
               <div className="mt-auto flex flex-col gap-3">

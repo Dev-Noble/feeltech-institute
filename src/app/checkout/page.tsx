@@ -63,7 +63,7 @@ export default function CheckoutPage() {
       if (isFirebaseConfigured && user) {
         // 2. Create order in Firestore
         const orderData = {
-          customerId: user.uid,
+          userId: user.uid,
           items: cartItems,
           totalAmount: finalTotal,
           status: "pending",

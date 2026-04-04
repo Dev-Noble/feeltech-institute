@@ -17,7 +17,7 @@ export const getCustomerOrders = async (userId: string) => {
   const ordersRef = collection(db, "orders");
   const q = query(
     ordersRef, 
-    where("customerId", "==", userId),
+    where("userId", "==", userId),
     orderBy("createdAt", "desc")
   );
   
