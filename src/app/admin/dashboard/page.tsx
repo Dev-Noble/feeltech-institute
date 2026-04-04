@@ -16,15 +16,18 @@ import {
   ShieldCheck,
   Package
 } from "lucide-react";
-import { getAdminStats, getPendingVendors, updateVendorStatus, getRecentActivity } from "@/services/adminService";
+import { getAdminStats, getPendingVendors, updateVendorStatus, getRecentActivity, getAllUsers, updateUserRole } from "@/services/adminService";
+import { UserProfile, UserRole } from "@/types";
 
 export default function AdminDashboardPage() {
   const { user, profile, loading, isAdmin } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState({ totalUsers: 0, totalVendors: 0, totalOrders: 0, totalRevenue: 0 });
   const [pendingVendors, setPendingVendors] = useState<any[]>([]);
+  const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [activity, setActivity] = useState<any[]>([]);
   const [fetching, setFetching] = useState(true);
+  const [activeTab, setActiveTab] = useState<"vendors" | "users">("vendors");
 
   useEffect(() => {
     if (!loading && !isAdmin) {
@@ -34,14 +37,16 @@ export default function AdminDashboardPage() {
 
   const fetchData = async () => {
     try {
-      const [s, v, a] = await Promise.all([
+      const [s, v, a, u] = await Promise.all([
         getAdminStats(),
         getPendingVendors(),
-        getRecentActivity()
+        getRecentActivity(),
+        getAllUsers()
       ]);
       setStats(s);
       setPendingVendors(v);
       setActivity(a);
+      setAllUsers(u);
     } catch (err) {
       console.error("Admin data fetch failed:", err);
     } finally {
@@ -58,7 +63,6 @@ export default function AdminDashboardPage() {
   const handleVendorAction = async (vendorId: string, approve: boolean) => {
      try {
         await updateVendorStatus(vendorId, approve);
-        // Refresh the list
         const updatedVendors = await getPendingVendors();
         setPendingVendors(updatedVendors);
      } catch (err) {
@@ -66,19 +70,33 @@ export default function AdminDashboardPage() {
      }
   };
 
-  if (loading || !isAdmin) return null;
+  const handleRoleUpdate = async (userId: string, newRole: UserRole) => {
+    try {
+      await updateUserRole(userId, newRole);
+      const updatedUsers = await getAllUsers();
+      setAllUsers(updatedUsers);
+    } catch (err) {
+      alert("Failed to update user role");
+    }
+  };
+
+  if (loading || !isAdmin) return (
+    <div className="flex h-screen items-center justify-center bg-carbon">
+       <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+    </div>
+  );
 
   const statCards = [
-    { label: "Total Revenue", value: `$${stats.totalRevenue.toLocaleString()}`, icon: <DollarSign size={24} />, trend: "+12.5%", color: "text-emerald", bg: "bg-emerald/10", border: "border-emerald/20" },
+    { label: "Total Revenue", value: `$${stats.totalRevenue.toLocaleString()}`, icon: <DollarSign size={24} />, trend: "Lifetime", color: "text-emerald", bg: "bg-emerald/10", border: "border-emerald/20" },
     { label: "Active Vendors", value: stats.totalVendors, icon: <Store size={24} />, trend: "Total count", color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
-    { label: "Total Users", value: stats.totalUsers, icon: <Users size={24} />, trend: "Global registered", color: "text-accent", bg: "bg-accent/10", border: "border-accent/20" },
+    { label: "Total Users", value: stats.totalUsers, icon: <Users size={24} />, trend: "Signed up", color: "text-accent", bg: "bg-accent/10", border: "border-accent/20" },
     { label: "Total Orders", value: stats.totalOrders, icon: <Package size={24} />, trend: "Processed", color: "text-cyan", bg: "bg-cyan/10", border: "border-cyan/20" },
   ];
 
   return (
     <div className="container mx-auto px-4 py-12 lg:px-8">
       {/* Header */}
-      <div className="mb-10 flex items-center justify-between">
+      <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-white flex items-center gap-3">
              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 border border-destructive/20 text-destructive">
@@ -86,7 +104,22 @@ export default function AdminDashboardPage() {
              </div>
              Admin Control Center
           </h1>
-          <p className="mt-2 text-text-secondary">Welcome back, {profile?.name}. Here's what's happening across the platform.</p>
+          <p className="mt-2 text-text-secondary">Welcome back, {profile?.name}. System health is nominal.</p>
+        </div>
+
+        <div className="flex bg-surface-elevated p-1 rounded-2xl border border-white/5">
+           <button 
+            onClick={() => setActiveTab("vendors")}
+            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'vendors' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:text-white'}`}
+           >
+             Vendors
+           </button>
+           <button 
+            onClick={() => setActiveTab("users")}
+            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'users' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:text-white'}`}
+           >
+             Users
+           </button>
         </div>
       </div>
 
@@ -106,7 +139,7 @@ export default function AdminDashboardPage() {
                  <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${stat.bg} ${stat.color} ${stat.border}`}>
                    {stat.icon}
                  </div>
-                 <span className="rounded-full bg-surface-elevated px-2.5 py-1 text-xs font-bold text-text-muted">
+                 <span className="rounded-full bg-surface-elevated px-2.5 py-1 text-[10px] font-black tracking-widest uppercase text-text-muted">
                    {stat.trend}
                  </span>
                </div>
@@ -120,50 +153,112 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-         {/* Vendor Approval Queue */}
+         {/* Main Content Area: Tabs */}
          <div className="lg:col-span-2 space-y-6">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-               Pending Vendor Approvals <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent/20 text-xs font-bold text-accent">{pendingVendors.length}</span>
-            </h2>
-            <div className="space-y-4">
-               {fetching ? (
-                 <div className="h-40 w-full animate-pulse rounded-2xl bg-surface-elevated" />
-               ) : pendingVendors.length > 0 ? (
-                 pendingVendors.map((vendor) => (
-                    <div key={vendor.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-white/5 bg-surface p-6 shadow-lg relative overflow-hidden group">
-                       <div className="absolute inset-0 z-0 bg-carbon" />
-                       <div className="relative z-10 flex items-center gap-4">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-elevated text-text-muted">
-                             <Store size={20} />
-                          </div>
-                          <div>
-                             <h4 className="font-bold text-white">{vendor.storeName}</h4>
-                             <p className="text-sm text-text-muted">{vendor.id} • Registered recently</p>
-                          </div>
-                       </div>
-                       <div className="relative z-10 flex gap-2">
-                          <button 
-                            onClick={() => handleVendorAction(vendor.id, false)}
-                            className="flex items-center justify-center gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-2 hover:bg-destructive/20 text-sm font-bold text-destructive transition-colors"
-                          >
-                             <XCircle size={16} /> Reject
-                          </button>
-                          <button 
-                            onClick={() => handleVendorAction(vendor.id, true)}
-                            className="flex items-center justify-center gap-2 rounded-xl bg-emerald/10 border border-emerald/20 px-4 py-2 text-sm font-bold text-emerald hover:bg-emerald/20 transition-colors"
-                          >
-                             <CheckCircle2 size={16} /> Approve
-                          </button>
-                       </div>
-                    </div>
-                 ))
-               ) : (
-                  <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 p-12 text-center text-text-muted">
-                     <CheckCircle2 size={40} className="mb-4 opacity-50 text-emerald" />
-                     <p>No pending vendor approvals. You're all caught up!</p>
-                  </div>
-               )}
-            </div>
+            {activeTab === "vendors" ? (
+              <>
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                   Pending Vendor Approvals <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent/20 text-xs font-bold text-accent">{pendingVendors.length}</span>
+                </h2>
+                <div className="space-y-4">
+                   {fetching ? (
+                     <div className="h-40 w-full animate-pulse rounded-2xl bg-surface-elevated" />
+                   ) : pendingVendors.length > 0 ? (
+                     pendingVendors.map((vendor) => (
+                        <div key={vendor.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-white/5 bg-surface p-6 shadow-lg relative overflow-hidden group">
+                           <div className="absolute inset-0 z-0 bg-carbon" />
+                           <div className="relative z-10 flex items-center gap-4">
+                              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-elevated text-text-muted hover:text-primary transition-colors">
+                                 <Store size={20} />
+                              </div>
+                              <div>
+                                 <h4 className="font-bold text-white">{vendor.storeName}</h4>
+                                 <p className="text-sm text-text-muted">{vendor.id} • Waiting for audit</p>
+                              </div>
+                           </div>
+                           <div className="relative z-10 flex gap-2">
+                              <button 
+                                onClick={() => handleVendorAction(vendor.id, false)}
+                                className="flex items-center justify-center gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-2 hover:bg-destructive/20 text-sm font-bold text-destructive transition-colors"
+                              >
+                                 <XCircle size={16} /> Reject
+                              </button>
+                              <button 
+                                onClick={() => handleVendorAction(vendor.id, true)}
+                                className="flex items-center justify-center gap-2 rounded-xl bg-emerald/10 border border-emerald/20 px-4 py-2 text-sm font-bold text-emerald hover:bg-emerald/20 transition-colors"
+                              >
+                                 <CheckCircle2 size={16} /> Approve
+                              </button>
+                           </div>
+                        </div>
+                     ))
+                   ) : (
+                      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 p-12 text-center text-text-muted">
+                         <CheckCircle2 size={40} className="mb-4 opacity-50 text-emerald" />
+                         <p>No pending vendor approvals. You're all caught up!</p>
+                      </div>
+                   )}
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                   Platform User Management <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary">{allUsers.length}</span>
+                </h2>
+                <div className="rounded-3xl border border-white/5 bg-surface shadow-xl relative overflow-hidden">
+                   <div className="absolute inset-0 z-0 bg-carbon" />
+                   <div className="relative z-10 overflow-x-auto">
+                      <table className="w-full text-left">
+                         <thead>
+                            <tr className="border-b border-white/5 text-[11px] font-black uppercase tracking-[0.2em] text-text-muted">
+                               <th className="px-6 py-5">User</th>
+                               <th className="px-6 py-5">Role</th>
+                               <th className="px-6 py-5">Actions</th>
+                            </tr>
+                         </thead>
+                         <tbody className="divide-y divide-white/5">
+                            {allUsers.map((u) => (
+                               <tr key={u.id} className="group hover:bg-white/[0.02] transition-colors">
+                                  <td className="px-6 py-4">
+                                     <div className="flex items-center gap-3">
+                                        <div className="h-9 w-9 rounded-xl bg-surface-elevated flex items-center justify-center text-text-muted">
+                                           <Users size={16} />
+                                        </div>
+                                        <div>
+                                           <p className="text-sm font-bold text-white">{u.name}</p>
+                                           <p className="text-[11px] text-text-muted">{u.email}</p>
+                                        </div>
+                                     </div>
+                                  </td>
+                                  <td className="px-6 py-4">
+                                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest
+                                        ${u.role === 'admin' ? 'bg-destructive/10 text-destructive' : 
+                                          u.role === 'vendor' ? 'bg-primary/10 text-primary' : 'bg-white/10 text-text-muted'}`}
+                                     >
+                                        {u.role}
+                                     </span>
+                                  </td>
+                                  <td className="px-6 py-4">
+                                     <div className="flex items-center gap-2">
+                                        <select 
+                                          value={u.role}
+                                          onChange={(e) => handleRoleUpdate(u.id, e.target.value as UserRole)}
+                                          className="bg-surface-elevated border border-white/10 rounded-lg text-[10px] font-bold text-white px-2 py-1 outline-none focus:ring-1 focus:ring-primary"
+                                        >
+                                           <option value="customer">Customer</option>
+                                           <option value="vendor">Vendor</option>
+                                           <option value="admin">Admin</option>
+                                        </select>
+                                     </div>
+                                  </td>
+                               </tr>
+                            ))}
+                         </tbody>
+                      </table>
+                   </div>
+                </div>
+              </>
+            )}
          </div>
 
          {/* System Activity */}

@@ -104,10 +104,13 @@ const Header: React.FC = () => {
                         <LayoutDashboard size={16} /> Vendor Dashboard
                       </Link>
                     )}
+                    <Link href="/profile" className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-text-secondary transition-colors hover:bg-white/5 hover:text-primary">
+                      <User size={16} /> My Profile
+                    </Link>
                     <Link href="/dashboard" className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-text-secondary transition-colors hover:bg-white/5 hover:text-primary">
                       <LayoutDashboard size={16} /> My Dashboard
                     </Link>
-                    <Link href="/orders/success" className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-text-secondary transition-colors hover:bg-white/5 hover:text-primary">
+                    <Link href="/dashboard" className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-text-secondary transition-colors hover:bg-white/5 hover:text-primary">
                       <Package size={16} /> My Orders
                     </Link>
                     <div className="my-1 border-t border-white/5" />

@@ -8,10 +8,13 @@ import {
   updateDoc,
   doc,
   getCountFromServer,
-  Timestamp,
-  getDoc
+  getDoc,
+  deleteDoc,
+  DocumentData,
+  QueryDocumentSnapshot
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { UserProfile, UserRole } from "@/types";
 
 /**
  * Get global platform statistics
@@ -27,7 +30,7 @@ export const getAdminStats = async () => {
     getDocs(ordersRef)
   ]);
 
-  const totalRevenue = ordersSnapshot.docs.reduce((sum, doc) => sum + (doc.data().totalAmount || 0), 0);
+  const totalRevenue = ordersSnapshot.docs.reduce((sum: number, doc: QueryDocumentSnapshot<DocumentData>) => sum + (doc.data().totalAmount || 0), 0);
 
   return {
     totalUsers: usersCount.data().count,
@@ -82,4 +85,26 @@ export const getRecentActivity = async (limitCount = 5) => {
     time: doc.data().createdAt?.toDate() || new Date(),
     status: 'success'
   }));
+};
+
+/**
+ * Fetch all users on the platform
+ */
+export const getAllUsers = async () => {
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, orderBy("createdAt", "desc"));
+  
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  } as UserProfile));
+};
+
+/**
+ * Change a user's role
+ */
+export const updateUserRole = async (userId: string, newRole: UserRole) => {
+  const userRef = doc(db, "users", userId);
+  await updateDoc(userRef, { role: newRole });
 };
