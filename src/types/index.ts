@@ -7,6 +7,7 @@ export interface UserProfile {
   role: UserRole;
   createdAt: any;
   photoURL?: string;
+  isApproved?: boolean; // Optional flag for vendors/merchants
 }
 
 export interface VendorProfile {
