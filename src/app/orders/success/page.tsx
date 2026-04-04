@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { CheckCircle2, Package, ArrowRight, Home, Receipt } from "lucide-react";
 
-export default function OrderSuccessPage() {
+function OrderSuccessContent() {
   const searchParams = useSearchParams();
   const orderRef = searchParams.get("ref") || "ORD-XXXXXX";
   const [showConfetti, setShowConfetti] = useState(false);
@@ -75,5 +75,17 @@ export default function OrderSuccessPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-carbon">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    }>
+      <OrderSuccessContent />
+    </Suspense>
   );
 }
