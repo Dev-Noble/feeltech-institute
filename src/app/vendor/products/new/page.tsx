@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { uploadImageToCloudinary } from "@/lib/cloudinary";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 import { motion } from "framer-motion";
 import {
   PackagePlus,
@@ -72,7 +72,7 @@ export default function NewProductPage() {
       if (!user) throw new Error("Not logged in");
 
       // 1. Upload image to Cloudinary
-      const imageUrl = await uploadImageToCloudinary(imageFile);
+      const imageUrl = await uploadToCloudinary(imageFile);
 
       // 2. Save product to Firestore
       const productData = {
