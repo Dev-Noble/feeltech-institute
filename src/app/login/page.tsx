@@ -50,8 +50,12 @@ export default function LoginPage() {
         className="relative z-10 w-full max-w-md space-y-8 rounded-[2.5rem] border border-white/5 bg-surface/50 backdrop-blur-xl p-10 shadow-2xl shadow-carbon"
       >
         <div className="space-y-4 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20">
-            <Zap size={28} />
+          <div className="mx-auto flex h-24 w-full max-w-[200px] items-center justify-center rounded-[2rem] bg-white/5 border border-white/10 shadow-2xl overflow-hidden">
+            <img 
+              src="/images/logo.png" 
+              alt="Feeltech Logo" 
+              className="h-full w-full object-contain p-4"
+            />
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-white">Welcome back</h1>
           <p className="text-text-secondary text-sm">Log in to manage your orders & preferences</p>

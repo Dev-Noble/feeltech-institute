@@ -39,13 +39,14 @@ const Header: React.FC = () => {
         <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-carbon/80 backdrop-blur-xl">
           <div className="container mx-auto flex h-18 items-center justify-between px-4 lg:px-8">
             {/* ... Logo and Search ... */}
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/20 transition-transform group-hover:scale-105">
-                <Zap size={22} className="text-white" />
+            <Link href="/" className="flex items-center group">
+              <div className="relative flex h-14 w-40 items-center justify-center rounded-2xl bg-white/5 border border-white/10 shadow-2xl transition-all duration-300 group-hover:bg-white/[0.08] group-hover:scale-105 overflow-hidden">
+                <img 
+                  src="/images/logo.png" 
+                  alt="Feeltech Logo" 
+                  className="h-full w-full object-contain p-2"
+                />
               </div>
-              <span className="text-xl font-extrabold tracking-tight text-white">
-                Feel<span className="text-primary">tech</span>
-              </span>
             </Link>
 
             {/* Desktop Search */}
@@ -174,11 +175,14 @@ const Header: React.FC = () => {
           >
             <div className="flex h-full flex-col p-6">
               <div className="flex items-center justify-between mb-10">
-                <Link href="/" className="flex items-center gap-2.5" onClick={() => setMobileOpen(false)}>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
-                    <Zap size={22} className="text-white" />
+                <Link href="/" onClick={() => setMobileOpen(false)}>
+                  <div className="flex h-16 w-full items-center justify-center rounded-2xl bg-white/5 border border-white/10 overflow-hidden shadow-xl">
+                    <img 
+                      src="/images/logo.png" 
+                      alt="Feeltech Logo" 
+                      className="h-full w-full object-contain p-3"
+                    />
                   </div>
-                  <span className="text-xl font-extrabold text-white">Feel<span className="text-primary">tech</span></span>
                 </Link>
                 <button onClick={() => setMobileOpen(false)} className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-surface-elevated">
                   <X size={22} className="text-text-secondary" />

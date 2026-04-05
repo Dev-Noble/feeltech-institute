@@ -56,6 +56,19 @@ export default function Home() {
         <div className="container relative z-10 mx-auto px-4 lg:px-8">
           <div className="flex flex-col items-center text-center">
 
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="mx-auto mb-12 flex h-32 w-full max-w-[280px] items-center justify-center rounded-[2.5rem] bg-white/5 border border-white/10 shadow-2xl relative overflow-hidden"
+            >
+               <img 
+                 src="/images/logo.png" 
+                 alt="Feeltech Logo" 
+                 className="h-full w-full object-contain p-6"
+               />
+               <div className="absolute inset-0 bg-primary/5 blur-3xl -z-10" />
+            </motion.div>
 
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
