@@ -41,11 +41,11 @@ const Header: React.FC = () => {
             {/* Logo and Mobile Toggle Group */}
             <div className="flex items-center gap-4 flex-nowrap">
             <Link href="/" className="flex items-center group">
-              <div className="relative flex h-14 w-40 items-center justify-center rounded-2xl bg-white/5 border border-white/10 shadow-2xl transition-all duration-300 group-hover:bg-white/[0.08] group-hover:scale-105 overflow-hidden">
+              <div className="relative flex h-14 w-40 items-center justify-center transition-all duration-300 group-hover:scale-110">
                 <img 
                   src="/images/logo.png" 
                   alt="Feeltech Logo" 
-                  className="h-full w-full object-contain p-2"
+                  className="h-full w-full object-contain"
                 />
               </div>
             </Link>

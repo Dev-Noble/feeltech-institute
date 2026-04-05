@@ -46,3 +46,27 @@ export const loginUser = async (email: string, pass: string) => {
 export const logoutUser = async () => {
   return await signOut(auth);
 };
+
+export const updateUserPassword = async (newPassword: string) => {
+  const user = auth.currentUser;
+  if (!user) throw new Error("No user logged in");
+  const { updatePassword } = await import("firebase/auth");
+  return await updatePassword(user, newPassword);
+};
+
+export const deleteUserAccount = async (userId: string) => {
+  const user = auth.currentUser;
+  if (!user) throw new Error("No user logged in");
+  
+  const { deleteUser } = await import("firebase/auth");
+  const { deleteDoc, doc } = await import("firebase/firestore");
+
+  // 1. Delete Firestore user profile
+  await deleteDoc(doc(db, "users", userId));
+  
+  // 2. Delete Firestore vendor profile if exists
+  await deleteDoc(doc(db, "vendors", userId));
+
+  // 3. Delete Firebase Auth user
+  return await deleteUser(user);
+};

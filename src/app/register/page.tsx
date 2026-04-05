@@ -59,11 +59,11 @@ export default function RegisterPage() {
         className="relative z-10 w-full max-w-xl space-y-8 rounded-[2.5rem] border border-white/5 bg-surface/50 backdrop-blur-xl p-10 shadow-2xl shadow-carbon"
       >
         <div className="space-y-4 text-center">
-          <div className="mx-auto flex h-24 w-full max-w-[200px] items-center justify-center rounded-[2rem] bg-white/5 border border-white/10 shadow-2xl overflow-hidden">
+          <div className="mx-auto flex h-24 w-full max-w-[200px] items-center justify-center relative">
             <img 
               src="/images/logo.png" 
               alt="Feeltech Logo" 
-              className="h-full w-full object-contain p-4"
+              className="h-full w-full object-contain"
             />
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-white">Create an Account</h1>

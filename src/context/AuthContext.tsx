@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, User } from "firebase/auth";
+import { onAuthStateChanged, User, signOut } from "firebase/auth";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { auth, db, isFirebaseConfigured } from "@/lib/firebase";
 import { UserProfile } from "@/types";
@@ -45,10 +45,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const unsubscribeProfile = onSnapshot(doc(db, "users", authUser.uid), (userDoc) => {
           if (userDoc.exists()) {
             setProfile(userDoc.data() as UserProfile);
+            setLoading(false);
           } else {
+            // Profile document deleted manually or via management - sign out auth user
             setProfile(null);
+            signOut(auth).then(() => {
+              setLoading(false);
+            });
           }
-          setLoading(false);
         }, (err: Error) => {
           console.error("Failed to fetch user profile:", err);
           setProfile(null);

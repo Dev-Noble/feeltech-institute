@@ -18,6 +18,7 @@ import { updateProfile } from "firebase/auth";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Link from "next/link";
+import { updateUserPassword, deleteUserAccount, logoutUser } from "@/services/authService";
 
 export default function ProfilePage() {
   const { user, profile, loading } = useAuth();
@@ -25,6 +26,9 @@ export default function ProfilePage() {
   const [name, setName] = useState("");
   const [updating, setUpdating] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [pwSuccess, setPwSuccess] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -53,6 +57,34 @@ export default function ProfilePage() {
     } catch (err) {
       console.error("Failed to update profile:", err);
       alert("Error updating profile. Please try again.");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    if (!newPassword || newPassword.length < 6) return;
+    setUpdating(true);
+    try {
+      await updateUserPassword(newPassword);
+      setPwSuccess(true);
+      setNewPassword("");
+      setTimeout(() => setPwSuccess(false), 3000);
+    } catch (err: any) {
+      alert(err.message || "Failed to update password. You may need to log out and back in to perform this action.");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    setUpdating(true);
+    try {
+      await deleteUserAccount(user.uid);
+      router.push("/login");
+    } catch (err: any) {
+      alert(err.message || "Failed to delete account. This action requires a recent login.");
     } finally {
       setUpdating(false);
     }
@@ -164,20 +196,75 @@ export default function ProfilePage() {
                  </form>
               </div>
 
-              {/* Account Security Banner */}
-              <div className="mt-8 rounded-3xl border border-white/5 bg-surface p-8 shadow-xl relative overflow-hidden group">
-                 <div className="absolute inset-0 bg-carbon z-0" />
-                 <div className="relative z-10 flex items-center justify-between gap-6">
-                    <div>
-                       <h4 className="text-xl font-bold text-white mb-1">Two-Factor Authentication</h4>
-                       <p className="text-sm text-text-muted tracking-tight leading-relaxed">
-                          Add an extra layer of security to your account by enabling 2FA. Recommended for all accounts.
-                       </p>
+              {/* Change Password Section */}
+              <div className="mt-8 rounded-3xl border border-white/5 bg-surface p-8 shadow-xl relative overflow-hidden">
+                <div className="absolute inset-0 bg-carbon z-0" />
+                <div className="relative z-10">
+                  <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                    <Shield className="text-primary" size={20} /> Security Settings
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-text-muted uppercase tracking-widest pl-1">New Password</label>
+                      <div className="flex gap-4">
+                        <input 
+                          type="password" 
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="Min 6 characters"
+                          className="flex-1 h-12 rounded-xl glass-input px-4 text-sm text-white outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all font-mono"
+                        />
+                        <button 
+                          onClick={handlePasswordChange}
+                          disabled={!newPassword || newPassword.length < 6 || updating}
+                          className="h-12 px-6 rounded-xl bg-surface-elevated border border-white/10 text-sm font-bold text-white hover:bg-white/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Update Password
+                        </button>
+                      </div>
+                      {pwSuccess && <p className="text-xs text-emerald font-bold mt-2 ml-1">Password updated successfully!</p>}
                     </div>
-                    <button className="shrink-0 h-12 px-6 rounded-2xl border border-white/10 text-sm font-bold text-white hover:bg-white/5 transition-colors">
-                       Manage 2FA
+                  </div>
+                </div>
+              </div>
+
+              {/* Danger Zone */}
+              <div className="mt-8 rounded-3xl border border-destructive/10 bg-destructive/5 p-8 shadow-xl relative overflow-hidden">
+                <div className="relative z-10">
+                  <h3 className="text-xl font-bold text-destructive mb-2">Danger Zone</h3>
+                  <p className="text-sm text-text-muted mb-6">
+                    Once you delete your account, there is no going back. Please be certain.
+                  </p>
+                  
+                  {!confirmDelete ? (
+                    <button 
+                      onClick={() => setConfirmDelete(true)}
+                      className="h-12 px-6 rounded-xl bg-destructive text-white text-sm font-bold shadow-lg shadow-destructive/20 hover:scale-[1.02] active:scale-98 transition-all"
+                    >
+                      Delete Account
                     </button>
-                 </div>
+                  ) : (
+                    <div className="flex flex-col sm:flex-row items-center gap-4 bg-carbon/50 p-4 rounded-2xl border border-destructive/20">
+                      <p className="text-sm font-bold text-white">Are you absolutely sure?</p>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={handleDeleteAccount}
+                          disabled={updating}
+                          className="h-10 px-4 rounded-lg bg-destructive text-white text-xs font-black uppercase tracking-widest"
+                        >
+                          Yes, Delete
+                        </button>
+                        <button 
+                          onClick={() => setConfirmDelete(false)}
+                          className="h-10 px-4 rounded-lg bg-surface-elevated text-white text-xs font-black uppercase tracking-widest"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
            </div>
         </div>
