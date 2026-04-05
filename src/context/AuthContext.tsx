@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { auth, db, isFirebaseConfigured } from "@/lib/firebase";
 import { UserProfile } from "@/types";
 
@@ -37,29 +37,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
+    const unsubscribeAuth = onAuthStateChanged(auth, (authUser) => {
+      setUser(authUser);
       
-      if (user) {
-        try {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (authUser) {
+        // Real-time listener for profile updates
+        const unsubscribeProfile = onSnapshot(doc(db, "users", authUser.uid), (userDoc) => {
           if (userDoc.exists()) {
             setProfile(userDoc.data() as UserProfile);
           } else {
             setProfile(null);
           }
-        } catch (err) {
+          setLoading(false);
+        }, (err: Error) => {
           console.error("Failed to fetch user profile:", err);
           setProfile(null);
-        }
+          setLoading(false);
+        });
+
+        return () => {
+          unsubscribeProfile();
+        };
       } else {
         setProfile(null);
+        setLoading(false);
       }
-      
-      setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => unsubscribeAuth();
   }, []);
 
   const isAdmin = profile?.role === "admin";

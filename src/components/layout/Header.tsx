@@ -105,9 +105,11 @@ const Header: React.FC = () => {
                     Dashboard
                   </Link>
 
-                  <div className="hidden flex-col items-end md:flex min-w-[60px]">
-                    <span className="text-sm font-bold text-white truncate max-w-[120px]">{profile?.name || user.displayName || "Account"}</span>
-                    <span className="text-[10px] font-black uppercase tracking-tight text-primary">{profile?.role || "Member"}</span>
+                  <div className="hidden flex-col items-end md:flex min-w-[70px]">
+                    <span className="text-sm font-black text-white truncate max-w-[120px]">{profile?.name || user.displayName || "Account"}</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.15em] text-primary">
+                      {profile?.role === 'admin' ? 'Administrator' : profile?.role || 'Member'}
+                    </span>
                   </div>
 
                   <div className="relative">
