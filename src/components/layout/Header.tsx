@@ -81,21 +81,31 @@ const Header: React.FC = () => {
                   </motion.span>
                 )}
               </Link>
-
               {user ? (
-                <div className="flex items-center gap-4 border-l border-white/10 pl-4">
-                  {/* Direct Dashboard Link for fast access */}
+                <div className="flex items-center gap-3 border-l border-white/10 pl-4">
+                  {/* Dedicated Admin Panel Link for high visibility */}
+                  {isAdmin && (
+                    <Link 
+                      href="/admin/dashboard"
+                      className="flex h-10 items-center justify-center gap-2 rounded-xl bg-destructive/10 border border-destructive/20 px-4 text-xs font-black uppercase tracking-widest text-destructive hover:bg-destructive/20 transition-all shadow-lg shadow-destructive/5"
+                    >
+                      <ShieldCheck size={14} />
+                      Admin Control
+                    </Link>
+                  )}
+
+                  {/* Dashboard Link - visible from md Up */}
                   <Link 
                     href="/dashboard"
-                    className="hidden lg:flex items-center gap-2 rounded-xl bg-surface-elevated border border-white/5 px-4 py-2 text-xs font-bold text-white hover:bg-white/5 transition-all"
+                    className="hidden sm:flex h-10 items-center justify-center gap-2 rounded-xl bg-surface-elevated border border-white/5 px-4 text-xs font-black uppercase tracking-widest text-white hover:bg-white/5 transition-all shadow-lg"
                   >
                     <LayoutDashboard size={14} className="text-primary" />
                     Dashboard
                   </Link>
 
-                  <div className="hidden flex-col items-end md:flex">
-                    <span className="text-sm font-semibold text-text-primary">{profile?.name || user.displayName || "Account"}</span>
-                    <span className="text-[10px] font-medium capitalize text-primary">{profile?.role || "Member"}</span>
+                  <div className="hidden flex-col items-end md:flex min-w-[60px]">
+                    <span className="text-sm font-bold text-white truncate max-w-[120px]">{profile?.name || user.displayName || "Account"}</span>
+                    <span className="text-[10px] font-black uppercase tracking-tight text-primary">{profile?.role || "Member"}</span>
                   </div>
 
                   <div className="relative">
