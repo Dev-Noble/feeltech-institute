@@ -37,7 +37,7 @@ export default function VendorDashboardPage() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-12 lg:px-8">
+    <div className="container mx-auto px-4 pt-24 pb-12 lg:px-8">
       {/* Header */}
       <div className="mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>

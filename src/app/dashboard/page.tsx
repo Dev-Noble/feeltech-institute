@@ -62,7 +62,7 @@ export default function CustomerDashboard() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-12 lg:px-8">
+    <div className="container mx-auto px-4 pt-24 pb-12 lg:px-8">
       {/* Welcome Header */}
       <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>

@@ -49,7 +49,7 @@ export default function Home() {
   return (
     <div className="flex flex-col pb-20">
       {/* Option A Immersive Hero */}
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-10">
+      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-24 pb-12">
         {/* Background Overlay */}
         <div className="absolute inset-0 z-0 bg-carbon" />
 
