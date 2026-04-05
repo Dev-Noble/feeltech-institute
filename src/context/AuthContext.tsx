@@ -37,12 +37,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
+    let unsubscribeProfile: (() => void) | null = null;
+
     const unsubscribeAuth = onAuthStateChanged(auth, (authUser) => {
+      // Clean up previous profile listener if it exists
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+        unsubscribeProfile = null;
+      }
+
       setUser(authUser);
       
       if (authUser) {
         // Real-time listener for profile updates
-        const unsubscribeProfile = onSnapshot(doc(db, "users", authUser.uid), (userDoc) => {
+        unsubscribeProfile = onSnapshot(doc(db, "users", authUser.uid), (userDoc) => {
           if (userDoc.exists()) {
             setProfile(userDoc.data() as UserProfile);
             setLoading(false);
@@ -58,17 +66,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setProfile(null);
           setLoading(false);
         });
-
-        return () => {
-          unsubscribeProfile();
-        };
       } else {
         setProfile(null);
         setLoading(false);
       }
     });
 
-    return () => unsubscribeAuth();
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeProfile) unsubscribeProfile();
+    };
   }, []);
 
   const isAdmin = profile?.role === "admin";

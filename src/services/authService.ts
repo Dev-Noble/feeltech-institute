@@ -20,6 +20,7 @@ export const registerUser = async (email: string, pass: string, name: string, ro
     name,
     email,
     role,
+    isApproved: role === "vendor" ? false : undefined,
     createdAt: serverTimestamp(),
   };
 

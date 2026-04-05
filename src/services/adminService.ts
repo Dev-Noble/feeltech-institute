@@ -64,10 +64,8 @@ export const updateVendorStatus = async (vendorId: string, isApproved: boolean) 
   // Update vendor profile
   await updateDoc(vendorRef, { isApproved });
   
-  // If approved, ensure user role is still 'vendor' (it should be)
-  if (isApproved) {
-    await updateDoc(userRef, { role: 'vendor' });
-  }
+  // Also sync with the user profile so the dashboard detects it instantly
+  await updateDoc(userRef, { isApproved, role: 'vendor' });
 };
 
 /**

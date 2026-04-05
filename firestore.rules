@@ -5,20 +5,31 @@ service cloud.firestore {
     
     // Helper function to check if the user is an admin
     function isAdmin() {
-      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'customer') == 'admin';
     }
     
     // Helper function to check if the user is a specific role
     function hasRole(role) {
-      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'customer') == role;
+    }
+
+    // Helper to check if the user owns the document
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
     }
 
     // User Profiles
     match /users/{userId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
-      // Protected role update
-      allow update: if request.auth != null && (request.auth.uid == userId && (request.resource.data.role == resource.data.role)) || isAdmin();
+      // Allow creation of new profile during registration
+      allow create: if isOwner(userId);
+      // Restricted update: can't change role unless Admin
+      allow update: if isAdmin() || (isOwner(userId) && (request.resource.data.role == resource.data.role));
+      allow delete: if isAdmin();
     }
     
     // Vendors
