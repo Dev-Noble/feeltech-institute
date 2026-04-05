@@ -1,33 +1,53 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import {
-  Package,
-  DollarSign,
-  TrendingUp,
-  ShoppingCart,
-  Plus,
-  Eye,
-  ArrowRight,
-  TrendingDown,
-  LayoutDashboard
+import { 
+  Package, 
+  DollarSign, 
+  TrendingUp, 
+  ShoppingCart, 
+  Plus, 
+  Eye, 
+  ArrowRight, 
+  TrendingDown, 
+  LayoutDashboard,
+  Layers
 } from "lucide-react";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export default function VendorDashboardPage() {
   const { user, profile, loading, isVendor } = useAuth();
+  const [vendorData, setVendorData] = useState<any>(null);
+  const [fetchingVendor, setFetchingVendor] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     if (!loading && !isVendor) {
       router.push("/");
+      return;
     }
-  }, [loading, isVendor, router]);
 
-  if (loading || !isVendor) return null;
+    if (user && isVendor) {
+      // Listen to the specific vendor document for real-time approval updates
+      const unsubscribe = onSnapshot(doc(db, "vendors", user.uid), (doc) => {
+        if (doc.exists()) {
+          setVendorData(doc.data());
+        }
+        setFetchingVendor(false);
+      });
+
+      return () => unsubscribe();
+    }
+  }, [loading, isVendor, user, router]);
+
+  if (loading || fetchingVendor || !isVendor) return null;
+
+  const isApproved = vendorData?.isApproved || profile?.isApproved;
 
   const stats = [
     { label: "Total Sales", value: "$12,450", icon: <DollarSign size={24} />, trend: "+15%", isPositive: true, color: "text-emerald", bg: "bg-emerald/10", border: "border-emerald/20" },
@@ -46,18 +66,29 @@ export default function VendorDashboardPage() {
                <LayoutDashboard size={20} />
              </div>
              Vendor Dashboard
+             <span className={`text-[10px] uppercase tracking-widest px-2 py-1 rounded-lg border ${isApproved ? 'bg-emerald/10 text-emerald border-emerald/20' : 'bg-amber/10 text-amber border-amber/20'}`}>
+                {isApproved ? 'Approved' : 'Pending Verification'}
+             </span>
           </h1>
           <p className="mt-2 text-text-secondary">Manage your store, products, and insights here.</p>
         </div>
         
         <div className="flex items-center gap-4">
-           {profile?.isApproved ? (
-              <Link
-                href="/vendor/products/new"
-                className="flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 font-bold text-white shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95"
-              >
-                 <span className="relative z-10 flex items-center gap-2"><Plus size={18} /> Add Product</span>
-              </Link>
+           {isApproved ? (
+              <>
+                <Link
+                  href="/vendor/products"
+                  className="flex items-center gap-2 rounded-2xl bg-surface-elevated border border-white/5 px-6 py-3 font-bold text-white hover:bg-white/10 transition-all active:scale-95 shadow-lg"
+                >
+                   <Layers size={18} className="text-primary" /> Store Inventory
+                </Link>
+                <Link
+                  href="/vendor/products/new"
+                  className="flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 font-bold text-white shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95"
+                >
+                   <span className="relative z-10 flex items-center gap-2"><Plus size={18} /> Add Product</span>
+                </Link>
+              </>
            ) : (
               <div className="rounded-xl border border-amber/20 bg-amber/10 px-4 py-2 flex items-center gap-2 text-sm font-bold text-amber">
                  Account Pending Approval
@@ -66,7 +97,7 @@ export default function VendorDashboardPage() {
         </div>
       </div>
 
-      {!profile?.isApproved && (
+      {!isApproved && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-10 rounded-2xl border border-destructive/20 bg-destructive/10 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
              <h3 className="text-lg font-bold text-destructive">Your store is currently inactive</h3>
@@ -76,7 +107,7 @@ export default function VendorDashboardPage() {
       )}
 
       {/* Stats Grid */}
-      <div className={`mb-10 grid grid-cols-1 gap-6 sm:grid-cols-2 ${!profile?.isApproved ? 'opacity-50 pointer-events-none' : ''} lg:grid-cols-4`}>
+      <div className={`mb-10 grid grid-cols-1 gap-6 sm:grid-cols-2 ${!isApproved ? 'opacity-50 pointer-events-none' : ''} lg:grid-cols-4`}>
         {stats.map((stat, i) => (
           <motion.div
             key={i}
@@ -106,7 +137,7 @@ export default function VendorDashboardPage() {
         ))}
       </div>
 
-      <div className={`grid grid-cols-1 lg:grid-cols-3 gap-8 ${!profile?.isApproved ? 'opacity-50 pointer-events-none' : ''}`}>
+      <div className={`grid grid-cols-1 lg:grid-cols-3 gap-8 ${!isApproved ? 'opacity-50 pointer-events-none' : ''}`}>
          {/* Recent Orders List */}
          <div className="lg:col-span-2 rounded-3xl border border-white/5 bg-surface shadow-xl overflow-hidden">
             <div className="border-b border-white/5 p-6 flex items-center justify-between">

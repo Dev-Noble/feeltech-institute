@@ -96,9 +96,9 @@ const Header: React.FC = () => {
                     </Link>
                   )}
 
-                  {/* Dashboard Link - visible from md Up */}
+                  {/* Dashboard Link - visible from sm Up */}
                   <Link 
-                    href="/dashboard"
+                    href={isAdmin ? "/admin/dashboard" : isVendor ? "/vendor/dashboard" : "/dashboard"}
                     className="hidden sm:flex h-10 items-center justify-center gap-2 rounded-xl bg-surface-elevated border border-white/5 px-4 text-xs font-black uppercase tracking-widest text-white hover:bg-white/5 transition-all shadow-lg"
                   >
                     <LayoutDashboard size={14} className="text-primary" />

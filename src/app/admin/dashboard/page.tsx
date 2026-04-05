@@ -16,14 +16,14 @@ import {
   ShieldCheck,
   Package
 } from "lucide-react";
-import { getAdminStats, getPendingVendors, updateVendorStatus, getRecentActivity, getAllUsers, updateUserRole } from "@/services/adminService";
+import { getAdminStats, getPendingVendors, getAllVendors, updateVendorStatus, getRecentActivity, getAllUsers, updateUserRole } from "@/services/adminService";
 import { UserProfile, UserRole } from "@/types";
 
 export default function AdminDashboardPage() {
   const { user, profile, loading, isAdmin } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState({ totalUsers: 0, totalVendors: 0, totalOrders: 0, totalRevenue: 0 });
-  const [pendingVendors, setPendingVendors] = useState<any[]>([]);
+  const [vendors, setVendors] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [activity, setActivity] = useState<any[]>([]);
   const [fetching, setFetching] = useState(true);
@@ -39,12 +39,12 @@ export default function AdminDashboardPage() {
     try {
       const [s, v, a, u] = await Promise.all([
         getAdminStats(),
-        getPendingVendors(),
+        getAllVendors(),
         getRecentActivity(),
         getAllUsers()
       ]);
       setStats(s);
-      setPendingVendors(v);
+      setVendors(v);
       setActivity(a);
       setAllUsers(u);
     } catch (err) {
@@ -63,8 +63,8 @@ export default function AdminDashboardPage() {
   const handleVendorAction = async (vendorId: string, approve: boolean) => {
      try {
         await updateVendorStatus(vendorId, approve);
-        const updatedVendors = await getPendingVendors();
-        setPendingVendors(updatedVendors);
+        const updatedVendors = await getAllVendors();
+        setVendors(updatedVendors);
      } catch (err) {
         alert("Failed to update vendor status");
      }
@@ -158,13 +158,13 @@ export default function AdminDashboardPage() {
             {activeTab === "vendors" ? (
               <>
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                   Pending Vendor Approvals <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent/20 text-xs font-bold text-accent">{pendingVendors.length}</span>
+                   All Vendor Records <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent/20 text-xs font-bold text-accent">{vendors.length}</span>
                 </h2>
                 <div className="space-y-4">
                    {fetching ? (
                      <div className="h-40 w-full animate-pulse rounded-2xl bg-surface-elevated" />
-                   ) : pendingVendors.length > 0 ? (
-                     pendingVendors.map((vendor) => (
+                   ) : vendors.length > 0 ? (
+                     vendors.map((vendor) => (
                         <div key={vendor.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-white/5 bg-surface p-6 shadow-lg relative overflow-hidden group">
                            <div className="absolute inset-0 z-0 bg-carbon" />
                            <div className="relative z-10 flex items-center gap-4">
@@ -172,23 +172,39 @@ export default function AdminDashboardPage() {
                                  <Store size={20} />
                               </div>
                               <div>
-                                 <h4 className="font-bold text-white">{vendor.storeName}</h4>
-                                 <p className="text-sm text-text-muted">{vendor.id} • Waiting for audit</p>
+                                 <div className="flex items-center gap-2">
+                                    <h4 className="font-bold text-white">{vendor.storeName}</h4>
+                                    {vendor.isApproved && (
+                                       <span className="rounded-full bg-emerald/10 px-2 py-0.5 text-[9px] font-black uppercase text-emerald border border-emerald/20">Approved</span>
+                                    )}
+                                 </div>
+                                 <p className="text-sm text-text-muted">{vendor.id} • {vendor.isApproved ? "Verified Partner" : "Waiting for audit"}</p>
                               </div>
                            </div>
                            <div className="relative z-10 flex gap-2">
-                              <button 
-                                onClick={() => handleVendorAction(vendor.id, false)}
-                                className="flex items-center justify-center gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-2 hover:bg-destructive/20 text-sm font-bold text-destructive transition-colors"
-                              >
-                                 <XCircle size={16} /> Reject
-                              </button>
-                              <button 
-                                onClick={() => handleVendorAction(vendor.id, true)}
-                                className="flex items-center justify-center gap-2 rounded-xl bg-emerald/10 border border-emerald/20 px-4 py-2 text-sm font-bold text-emerald hover:bg-emerald/20 transition-colors"
-                              >
-                                 <CheckCircle2 size={16} /> Approve
-                              </button>
+                              {vendor.isApproved ? (
+                                 <button 
+                                   onClick={() => handleVendorAction(vendor.id, false)}
+                                   className="flex items-center justify-center gap-2 rounded-xl border border-amber/20 bg-amber/10 px-4 py-2 hover:bg-amber/20 text-sm font-bold text-amber transition-colors"
+                                 >
+                                    <XCircle size={16} /> Reset to Pending
+                                 </button>
+                              ) : (
+                                 <>
+                                    <button 
+                                      onClick={() => handleVendorAction(vendor.id, false)}
+                                      className="flex items-center justify-center gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-2 hover:bg-destructive/20 text-sm font-bold text-destructive transition-colors"
+                                    >
+                                       <XCircle size={16} /> Reject
+                                    </button>
+                                    <button 
+                                      onClick={() => handleVendorAction(vendor.id, true)}
+                                      className="flex items-center justify-center gap-2 rounded-xl bg-emerald/10 border border-emerald/20 px-4 py-2 text-sm font-bold text-emerald hover:bg-emerald/20 transition-colors"
+                                    >
+                                       <CheckCircle2 size={16} /> Approve
+                                    </button>
+                                 </>
+                              )}
                            </div>
                         </div>
                      ))

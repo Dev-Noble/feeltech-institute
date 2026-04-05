@@ -26,8 +26,10 @@ export interface Product {
   title: string;
   description: string;
   price: number;
+  discountPrice?: number;
   category: string;
   imageUrls: string[];
+  images?: string[]; // Alias for imageUrls for some components
   stock: number;
   createdAt: any;
 }

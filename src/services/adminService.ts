@@ -55,6 +55,20 @@ export const getPendingVendors = async () => {
 };
 
 /**
+ * Fetch all vendors regardless of status
+ */
+export const getAllVendors = async () => {
+  const vendorsRef = collection(db, "vendors");
+  const q = query(vendorsRef, orderBy("createdAt", "desc"));
+  
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+};
+
+/**
  * Approve or Reject a vendor
  */
 export const updateVendorStatus = async (vendorId: string, isApproved: boolean) => {
